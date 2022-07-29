@@ -6,5 +6,3 @@
         (remaining-years (% y machzor)))
     (add (add first-molad (mul machzor-remainder machzors))
          (add (calculate-remaining-years (- remaining-years 1)) (mul month-remainder m)))))
-
-(get-molad 11 5782)
