@@ -1,7 +1,6 @@
 #lang sicp
 (#%require "functions.rkt")
 (#%provide (all-defined))
-
 (define % modulo)
 
 (define (make-interval d s c)
@@ -68,7 +67,7 @@
           ((leap-year? yr) (add leap-year-remainder (calculate-remaining-years (- yr 1))))
           (else (add reg-year-remainder (calculate-remaining-years (- yr 1))))))
 
-(define day-names (list "Sunday" "Monday" "Tuesday" "Wednesday" "Thursday" "Friday" "Shabbos"))
+(define day-names (list "Shabbos" "Sunday" "Monday" "Tuesday" "Wednesday" "Thursday" "Friday"))
 (define (pretty-print-interval i)
   (let ((minutes (floor (/ (chalokim i) chalokim-to-minute)))
         (chalokim (% (chalokim i) chalokim-to-minute))
@@ -100,3 +99,60 @@
 (define machzor-remainder (make-interval 2 16 595))
 (define reg-year-remainder (make-interval 4 8 876))
 (define leap-year-remainder (make-interval 5 21 589))
+
+(define (get-molad m y)
+  (let ((machzors (floor (/ y machzor)))
+        (remaining-years (% y machzor)))
+    (add (add first-molad (mul machzor-remainder machzors))
+         (add (calculate-remaining-years (- remaining-years 1)) (mul month-remainder m)))))
+
+(define (get-rh y)
+  (define (gt-interval a b) (and (= (days a) (days b)) (>= (shaos a) (shaos b)) (>= (chalokim a) (chalokim b))))
+  (define (past-chatzos? molad) (>= (shaos molad) 18))
+  (define (test-adu d)
+    (define (is-adu? d) (or (= d 1) (= d 4) (= d 6)))
+    (% (if (is-adu? d) (+ 1 d) d) max-days))
+  (let ((year-molad (get-molad 0 y))
+        (three-nine (make-interval 3 9 204))
+        (two-fifteen (make-interval 2 15 589)))
+    (cond
+      ((past-chatzos? year-molad) (test-adu (+ 1 (days year-molad))))
+      ((or
+        (and (not leap-year?) (gt-interval year-molad three-nine))
+        (and (leap-year? (- y 1)) (gt-interval year-molad two-fifteen))
+        )
+        (test-adu (+ (days year-molad) 1)))
+      (else (test-adu (days year-molad))))))
+
+(define (year-type y)
+  (define (days-between d1 d2)
+    (define (do-test d n)
+      (if (= (% d max-days) d2)
+          n
+          (do-test (+ d 1) (+ n 1))))
+    (let ((diff (do-test (+ d1 1) 0)))
+      (if (= diff 0)
+             5
+             diff)))
+  (let ((rh1 (get-rh y))
+        (rh2 (get-rh (+ y 1))))
+    (let ((diff (days-between rh1 rh2)))
+      (cond
+        ((= rh1 3) 1)
+        ((leap-year? y)
+             (cond ((= diff 4) 0)
+                   ((= diff 5) 1)
+                   ((= diff 6) 2)))
+            (else (cond ((= diff 2) 0)
+                        ((= diff 3) 1)
+                        ((= diff 4) 2)))))))
+
+
+(define (is-month-full? m y)
+  (let ((year (year-type y)))
+  (cond ((= m 1)
+         (or (= year 2) (= year 1)))
+        ((= m 2) (= year 2))
+        ((or (= m 0) (= m 3)) #t)
+        ((leap-year? y) (even? m))
+        (else (odd? m)))))
