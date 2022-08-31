@@ -40,4 +40,7 @@
   (for-each (lambda (n) (display (add-hebrew-date d1 n)) (newline))
             (list 0 1 2 3 4 5 6 7 8 9 10)))
 
-;(test-dates)
+
+(define (test-convert)
+  (convert-interval-to-chalokim lunar-cycle))
+(test-convert)

@@ -99,6 +99,11 @@
            (display chalokim)
            (display " chalokim")))))
 
+(define (convert-interval-to-chalokim i)
+  (+ (* (days i) max-shaos max-chalokim)
+     (* (shaos i) max-chalokim)
+     (chalokim i)))
+
 ; Get Molad                           
 (define first-molad (make-interval 2 5 204))
 (define month-remainder (make-interval 1 12 793))
