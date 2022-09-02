@@ -261,7 +261,7 @@
         i
         (subtract-all-lunar-cycles (sub-interval i lunar-cycle))))
 
-  (define (get-tekufas-nissan y)
+  (define (get-tekufas-nissan-day-of-month-shmuel y)
     (let ((total-cycle-accumulation (mul-tekufah solar-lunar-machzor-diff (get-machzors y))))
       (let ((remaining-month  (subtract-all-lunar-cycles
                                (sub-interval
@@ -283,10 +283,10 @@
                               (shaos molad) (chalokim molad)))
               ))))))
 
-  (define (get-tekufah t y)
-    (let ((tekufas-nissan (get-tekufas-nissan y)))
+  (define (get-tekufah-day-of-month-shmuel t y)
+    (let ((tekufas-nissan (get-tekufas-nissan-day-of-month-shmuel y)))
       (let ((interval (add-tekufah
-                       (get-tekufas-nissan y)
+                       (get-tekufas-nissan-day-of-month-shmuel y)
                        (mul-tekufah tekufah-difference t)))
             (nissan (if (leap-year? y) 7 6)))
         (make-interval (day (add-hebrew-date
@@ -294,12 +294,34 @@
                              (- (days interval) (days tekufas-nissan))))
                        (shaos interval)
                        (chalokim interval)))))
+
+  (define chamah-cycle 28)
+  (define year-tekufah-movement-per-day-in-week (make-interval 1 6 0))
+  (define tekufah-diff-day-of-week-shmuel (make-interval 0 7 540))
+  (define (n-days n)
+    (make-interval n 0 0))
+  (define (get-tekufah-day-of-week-shmuel t y)
+    (let ([accumulation (add-tekufah
+                         (n-days 3) ; Add 3 days bc first tekufas nissan was on Wednesday eve
+                         (mul-tekufah year-tekufah-movement-per-day-in-week (% (- y 1) chamah-cycle)))])
+      (let ([breakdown (make-interval (% (days accumulation) max-days-in-week)
+                                      (shaos accumulation)
+                                      (chalokim accumulation))])
+        (add-interval
+         breakdown
+         (n-days 1)
+         (mul-interval tekufah-diff-day-of-week-shmuel t)))))  
+      
+        
+            
+          
       
 
   (define add-tekufah (make-interval-addition 0)) ; Creates addition with no max for days
 
   (define mul-tekufah (make-interval-multiplication 0)) ; Same, for multiplication
-                                                 
+
+ 
                  
                                                  
                        
@@ -352,3 +374,4 @@
         d
         (add-hebrew-date (add-one d) (- n 1))))
   )
+

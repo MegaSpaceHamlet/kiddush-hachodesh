@@ -80,6 +80,18 @@
                      (make-interval 28 10 540)))])
   (for-each (lambda (y)
               (for-each (lambda (t)
-                          (check-equal? (list-ref (list-ref checks y) t) (get-tekufah t (list-ref years y))))
+                          (check-equal? (list-ref (list-ref checks y) t) (get-tekufah-day-of-month-shmuel t (list-ref years y))))
                         (enumerate 0 3)))
             (enumerate 0 (- (length years) 1))))
+
+(let ([y 4930]
+      [checks (list
+              ; Year 4930
+              (make-interval 5 6 0) ; nissan
+              (make-interval 5 13 540) ; tammuz
+              (make-interval 5 21 0) ; tishrei
+              (make-interval 6 4 540) ; teves
+              (make-interval 6 12 0); nissan 4931
+              )])
+  (for-each (lambda (t) (check-equal? (list-ref checks t) (get-tekufah-day-of-week-shmuel t y)))
+            (enumerate 0 4)))
